@@ -35,9 +35,9 @@ class Target_XYWH
   int firstBodyFound = 0;
 
   CascadeClassifier face_cascade;
-  String face_cascade_name = "/usr/local/share/OpenCV/haarcascades/haarcascade_frontalface_default.xml";
+  //String face_cascade_name = "/home/odroid/catkin_ws/src/mybot_followme/res/haarcascades/haarcascade_frontalface_default.xml";
 
-  //String face_cascade_name = "/usr/local/share/OpenCV/haarcascades/haarcascade_fullbody.xml";
+  String face_cascade_name = "/home/odroid/catkin_ws/src/mybot_followme/res/haarcascades/haarcascade_upperbody.xml";
 
   // my simple filter
   void myFilter(double x, double y, double width, double height)
@@ -112,7 +112,7 @@ public:
     //-- Detect faces
     //face_cascade.detectMultiScale( frame_gray, faces, 1.1, 2, 0|CASCADE_SCALE_IMAGE, Size(16, 12), Size(80, 60) ); // 30ms
 
-    face_cascade.detectMultiScale( frame_gray, faces); // 35ms
+    face_cascade.detectMultiScale( frame_gray, faces, 1.1, 3); // 35ms
     
     t = (double)cvGetTickCount() - t;
     printf( "detection time = %g ms\n", t/((double)cvGetTickFrequency()*1000.) );
