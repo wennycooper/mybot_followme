@@ -145,8 +145,8 @@ public:
 
         // publishing
         brray.data[0] = 0.0; // x: 0.0 (depth)
-        brray.data[1] = (filter_x - 320) / 320; // y: -1 ~ +1
-        brray.data[2] = (filter_y - 240) / 240; // z: -1 ~ +1
+        brray.data[1] = (filter_x + filter_width/2 - 320) / 320; // y: -1 ~ +1
+        brray.data[2] = (filter_y + filter_height/2 - 240) / 240; // z: -1 ~ +1
         brray.data[3] = filter_width / 640; // width: 0 ~ +1
         brray.data[4] = filter_height / 480;// height: 0 ~ +1
 
