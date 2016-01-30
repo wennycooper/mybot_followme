@@ -2,6 +2,7 @@
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
 #include "std_msgs/Float32MultiArray.h"
+#include <geometry_msgs/Twist.h>
 #include <sensor_msgs/image_encodings.h>
 #include "opencv2/objdetect/objdetect.hpp"
 #include <opencv2/imgproc/imgproc.hpp>
@@ -24,6 +25,7 @@ class Target_XYWH
   image_transport::Subscriber image_sub_;
   image_transport::Publisher image_pub_;
   ros::Publisher target_xywh_pub_;
+  ros::Publisher cmd_pub_;
 
   std_msgs::Float32MultiArray brray;
 
@@ -32,17 +34,17 @@ class Target_XYWH
   double filter_y;
   double filter_width;
   double filter_height;
-  int firstBodyFound = 0;
+  //int firstBodyFound = 0;
 
   CascadeClassifier face_cascade;
-  //String face_cascade_name = "/home/odroid/catkin_ws/src/mybot_followme/res/haarcascades/haarcascade_frontalface_default.xml";
+//  String face_cascade_name = "/home/odroid/catkin_ws/src/mybot_followme/res/haarcascades/haarcascade_frontalface_default.xml";
 
   String face_cascade_name = "/home/odroid/catkin_ws/src/mybot_followme/res/haarcascades/haarcascade_upperbody.xml";
 
   // my simple filter
   void myFilter(double x, double y, double width, double height)
   {
-    double Kp = 0.8;
+    double Kp = 0.6;
     double d_x = x - filter_x;
     double d_y = y - filter_y;
     double d_width = width - filter_width;
@@ -64,6 +66,9 @@ public:
       &Target_XYWH::imageCb, this);
     image_pub_ = it_.advertise("/target_xywh/output_video", 1);
     target_xywh_pub_ = nh_.advertise<std_msgs::Float32MultiArray>("/target_xywh", 1000);
+
+    cmd_pub_ = nh_.advertise<geometry_msgs::Twist>("/andbot/cmd_vel", 1);
+
 
 //    std_msgs::Float32MultiArray array;
     brray.data.clear();
@@ -112,17 +117,21 @@ public:
     //-- Detect faces
     //face_cascade.detectMultiScale( frame_gray, faces, 1.1, 2, 0|CASCADE_SCALE_IMAGE, Size(16, 12), Size(80, 60) ); // 30ms
 
-    face_cascade.detectMultiScale( frame_gray, faces, 1.1, 3); // 35ms
+    face_cascade.detectMultiScale( frame_gray, faces, 1.1, 2); // 35ms
     
     t = (double)cvGetTickCount() - t;
     printf( "detection time = %g ms\n", t/((double)cvGetTickFrequency()*1000.) );
 
     if (faces.size() > 0) {
         myFilter(faces[0].x * 4, faces[0].y * 4, faces[0].width * 4, faces[0].height * 4);
-        firstBodyFound = 1;
+    //    firstBodyFound = 1;
+    }
+    else
+    {
+        myFilter(640/2, 480/2, 100/2, 100/2);
     }
 
-    if (firstBodyFound) {
+    if (1) {
         size_t i = 0;
         //Point center( (faces[i].x + faces[i].width/2) * 4, (faces[i].y + faces[i].height/2) * 4 );
         //ellipse( frameOrig, center, Size( faces[i].width/2 * 4, faces[i].height/2 *4), 0, 0, 360, Scalar( 255, 0, 255 ), 4, 8, 0 );
@@ -134,17 +143,25 @@ public:
            5,
            8);
 
-        brray.data[0] = filter_x;
-        brray.data[1] = filter_y;
-        brray.data[2] = filter_width;
-        brray.data[3] = filter_height;
+        // publishing
+        brray.data[0] = 0.0; // x: 0.0 (depth)
+        brray.data[1] = (filter_x - 320) / 320; // y: -1 ~ +1
+        brray.data[2] = (filter_y - 240) / 240; // z: -1 ~ +1
+        brray.data[3] = filter_width / 640; // width: 0 ~ +1
+        brray.data[4] = filter_height / 480;// height: 0 ~ +1
 
         target_xywh_pub_.publish(brray);
+
+// control base to head to the target
+        geometry_msgs::TwistPtr cmd(new geometry_msgs::Twist());
+	cmd->angular.z = -brray.data[1] * 1.5; 
+        cmd_pub_.publish(cmd);
+
     }
 
     // Draw an example circle on the video stream
-    if (cv_ptr->image.rows > 60 && cv_ptr->image.cols > 60)
-      cv::circle(cv_ptr->image, cv::Point(50, 50), 10, CV_RGB(255,0,0));
+    //if (cv_ptr->image.rows > 60 && cv_ptr->image.cols > 60)
+    //  cv::circle(cv_ptr->image, cv::Point(50, 50), 10, CV_RGB(255,0,0));
 
     // Update GUI Window
     //cv::imshow(OPENCV_WINDOW, cv_ptr->image);
