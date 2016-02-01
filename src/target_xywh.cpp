@@ -30,10 +30,10 @@ class Target_XYWH
   std_msgs::Float32MultiArray brray;
 
 
-  double filter_x;
-  double filter_y;
-  double filter_width;
-  double filter_height;
+  double filter_x = 0.0;
+  double filter_y = 0.0;
+  double filter_width = 0.0;
+  double filter_height = 0.0;
   //int firstBodyFound = 0;
 
   CascadeClassifier face_cascade;
@@ -42,18 +42,14 @@ class Target_XYWH
   String face_cascade_name = "/home/odroid/catkin_ws/src/mybot_followme/res/haarcascades/haarcascade_upperbody.xml";
 
   // my simple filter
-  void myFilter(double x, double y, double width, double height)
+  void myFilter(double x, double y)
   {
     double Kp = 0.6;
     double d_x = x - filter_x;
     double d_y = y - filter_y;
-    double d_width = width - filter_width;
-    double d_height = height - filter_height;
 
     filter_x += Kp * d_x;
     filter_y += Kp * d_y;
-    filter_width  += Kp * d_width;
-    filter_height += Kp * d_height;
   }
 
   
@@ -123,19 +119,20 @@ public:
     printf( "detection time = %g ms\n", t/((double)cvGetTickFrequency()*1000.) );
 
     if (faces.size() > 0) {
-        myFilter(faces[0].x * 4, faces[0].y * 4, faces[0].width * 4, faces[0].height * 4);
+        myFilter((faces[0].x + faces[0].width/2) * 4 - 320, (faces[0].y + faces[0].height/2) * 4 - 240);
     //    firstBodyFound = 1;
     }
     else
     {
-        myFilter(640/2, 480/2, 100/2, 100/2);
+        myFilter(0.0, 0.0);
     }
 
     if (1) {
         size_t i = 0;
-        //Point center( (faces[i].x + faces[i].width/2) * 4, (faces[i].y + faces[i].height/2) * 4 );
-        //ellipse( frameOrig, center, Size( faces[i].width/2 * 4, faces[i].height/2 *4), 0, 0, 360, Scalar( 255, 0, 255 ), 4, 8, 0 );
+        Point center(filter_x + 320.0, filter_y + 240);
+        cv::circle(cv_ptr->image, center, 50, CV_RGB(0,255,255), 5.0);
 
+        /*
         rectangle(cv_ptr->image,
            Point(filter_x, filter_y),
            Point(filter_x + filter_width, filter_y + filter_height),
@@ -143,20 +140,21 @@ public:
            5,
            8);
 
+        */
+
         // publishing
         brray.data[0] = 0.0; // x: 0.0 (depth)
-        brray.data[1] = (filter_x + filter_width/2 - 320) / 320; // y: -1 ~ +1
-        brray.data[2] = (filter_y + filter_height/2 - 240) / 240; // z: -1 ~ +1
-        brray.data[3] = filter_width / 640; // width: 0 ~ +1
-        brray.data[4] = filter_height / 480;// height: 0 ~ +1
+        brray.data[1] = filter_x; // y: -320 ~ +320
+        brray.data[2] = filter_y; // z: -240 ~ +240
+        brray.data[3] = 0.0;
+        brray.data[4] = 0.0;
 
         target_xywh_pub_.publish(brray);
 
 // control base to head to the target
         geometry_msgs::TwistPtr cmd(new geometry_msgs::Twist());
-	cmd->angular.z = -brray.data[1] * 1.5; 
+	cmd->angular.z = -brray.data[1]/320 * 1.5; 
         cmd_pub_.publish(cmd);
-
     }
 
     // Draw an example circle on the video stream
