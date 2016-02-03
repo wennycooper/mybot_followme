@@ -30,6 +30,11 @@ class Target_XYWH
   std_msgs::Float32MultiArray brray;
 
 
+  unsigned long  start_time, now;
+
+  struct timeval tp;
+  double before_filter_x;
+  double before_filter_y;
   double filter_x = 0.0;
   double filter_y = 0.0;
   double filter_width = 0.0;
@@ -79,6 +84,10 @@ public:
         printf("--(!)Error loading face cascade\n"); 
     };
 
+    
+    gettimeofday(&tp, NULL);
+    start_time = tp.tv_sec * 1000000 + tp.tv_usec;
+
   }
 
   ~Target_XYWH()
@@ -88,7 +97,6 @@ public:
 
   void imageCb(const sensor_msgs::ImageConstPtr& msg)
   {
-    float t;
     cv_bridge::CvImagePtr cv_ptr;
     try
     {
@@ -109,23 +117,35 @@ public:
     cvtColor( frame, frame_gray, COLOR_BGR2GRAY );
     equalizeHist( frame_gray, frame_gray );
 
-    t = (double)cvGetTickCount();
+    //t = (double)cvGetTickCount();
     //-- Detect faces
     //face_cascade.detectMultiScale( frame_gray, faces, 1.1, 2, 0|CASCADE_SCALE_IMAGE, Size(16, 12), Size(80, 60) ); // 30ms
 
-    face_cascade.detectMultiScale( frame_gray, faces, 1.1, 2); // 35ms
+    face_cascade.detectMultiScale( frame_gray, faces, 1.05, 2); // 35ms
     
-    t = (double)cvGetTickCount() - t;
-    printf( "detection time = %g ms\n", t/((double)cvGetTickFrequency()*1000.) );
+    //t = (double)cvGetTickCount() - t;
+    //printf( "detection time = %g ms\n", t/((double)cvGetTickFrequency()*1000.) );
 
     if (faces.size() > 0) {
-        myFilter((faces[0].x + faces[0].width/2) * 4 - 320, (faces[0].y + faces[0].height/2) * 4 - 240);
-    //    firstBodyFound = 1;
+        //myFilter((faces[0].x + faces[0].width/2) * 4 - 320, (faces[0].y + faces[0].height/2) * 4 - 240);
+        //firstBodyFound = 1;
+        before_filter_x = (faces[0].x + faces[0].width/2) * 4 - 320;
+        before_filter_y = (faces[0].y + faces[0].height/2) * 4 - 240;
     }
     else
     {
-        myFilter(0.0, 0.0);
+        //myFilter(0.0, 0.0);
+        before_filter_x = 0.0;
+        before_filter_y = 0.0;
     }
+
+    myFilter(before_filter_x, before_filter_y);
+
+    gettimeofday(&tp, NULL);
+    now = tp.tv_sec * 1000000 + tp.tv_usec; 
+    double t = (double) (now - start_time) / 1000000;
+
+    printf("%f    %f    %f\n", t, before_filter_x, filter_x);
 
     if (1) {
         size_t i = 0;
@@ -163,7 +183,7 @@ public:
 
     // Update GUI Window
     //cv::imshow(OPENCV_WINDOW, cv_ptr->image);
-    cv::waitKey(3);
+    //cv::waitKey(3);
     
     // Output modified video stream
     image_pub_.publish(cv_ptr->toImageMsg());

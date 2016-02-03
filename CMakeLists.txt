@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   image_transport
   roscpp
+  pcl_ros
   sensor_msgs
   std_msgs
 )
@@ -18,6 +19,10 @@ find_package( OpenCV REQUIRED )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
+
+find_package(Boost REQUIRED)
+find_package(PCL)
+
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -106,10 +111,10 @@ find_package( OpenCV REQUIRED )
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES mybot_followme
-#  CATKIN_DEPENDS cv_bridge image_transport roscpp sensor_msgs std_msgs
-#  DEPENDS system_lib
+  INCLUDE_DIRS 
+  LIBRARIES mybot_followme
+  CATKIN_DEPENDS cv_bridge image_transport pcl_ros roscpp sensor_msgs std_msgs
+  DEPENDS system_lib Boost PCL
 )
 
 ###########
@@ -122,6 +127,8 @@ catkin_package(
 include_directories(
   ${catkin_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
+  ${PCL_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -148,6 +155,9 @@ include_directories(
 
 add_executable(target_xywh src/target_xywh.cpp)
 target_link_libraries(target_xywh ${catkin_LIBRARIES} ${OpenCV_LIBS})
+
+add_executable(xtion_pro_followme src/xtion_pro_followme.cpp)
+target_link_libraries(xtion_pro_followme ${catkin_LIBRARIES} ${OpenCV_LIBS} ${PCL_LIBRARIES})
 
 #############
 ## Install ##
