@@ -51,10 +51,10 @@ class Target_XYZ
   double max_y_ = 0.3; /**< The maximum y position of the points in the box. */
   double min_x_ = -0.3; /**< The minimum x position of the points in the box. */
   double max_x_ = 0.3; /**< The maximum x position of the points in the box. */
-  double max_z_ = 1.2; /**< The maximum z position of the points in the box. */
+  double max_z_ = 1.3; /**< The maximum z position of the points in the box. */
   double goal_z_ = 0.6; /**< The distance away from the robot to hold the centroid */
   double z_scale_ = 0.5; /**< The scaling factor for translational robot speed */
-  double x_scale_ = 1.5; /**< The scaling factor for rotational robot speed */
+  double x_scale_ = 2.0; /**< The scaling factor for rotational robot speed */
   
 //  String face_cascade_name = "/home/odroid/catkin_ws/src/mybot_followme/res/haarcascades/haarcascade_frontalface_default.xml";
 
@@ -109,6 +109,7 @@ public:
     float x = 0.0;
     float y = 0.0;
     float z = 1e6;
+    float z1 = 0.0;
     //Number of points observed
     unsigned int n = 0;
     //Iterate through all the points in the region and find the average of the position
@@ -125,6 +126,7 @@ public:
           x += pt.x;
           y += pt.y;
           z = std::min(z, pt.z);
+          z1 += pt.z;
           n++;
         }
       }
@@ -136,6 +138,7 @@ public:
     {
       x /= n;
       y /= n;
+      z1 /= n;
       if(z > max_z_){
         ROS_DEBUG("No valid points detected, stopping the robot");
         /*
@@ -154,7 +157,8 @@ public:
       {
         geometry_msgs::TwistPtr cmd(new geometry_msgs::Twist());
         cmd->linear.x = (z - goal_z_) * z_scale_;
-        cmd->angular.z = -x * x_scale_;
+        //cmd->angular.z = -x * x_scale_;
+        cmd->angular.z = -1.0 * atan(x/z) * x_scale_;
         cmd_pub_.publish(cmd);
       }
     }
