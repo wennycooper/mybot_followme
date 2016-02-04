@@ -164,7 +164,7 @@ public:
 
         // publishing
         brray.data[0] = 0.0; // x: 0.0 (depth)
-        brray.data[1] = filter_x; // y: -320 ~ +320
+        brray.data[1] = -filter_x; // y: -320 ~ +320
         brray.data[2] = filter_y; // z: -240 ~ +240
         brray.data[3] = 0.0;
         brray.data[4] = 0.0;
