@@ -158,6 +158,10 @@ target_link_libraries(target_xywh ${catkin_LIBRARIES} ${OpenCV_LIBS})
 
 add_executable(xtion_pro_followme src/xtion_pro_followme.cpp)
 target_link_libraries(xtion_pro_followme ${catkin_LIBRARIES} ${OpenCV_LIBS} ${PCL_LIBRARIES})
+ 
+add_executable(ultra_tracking src/ultra_tracking.cpp)
+target_link_libraries(ultra_tracking ${catkin_LIBRARIES})
+
 
 #############
 ## Install ##
