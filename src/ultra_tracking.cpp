@@ -24,7 +24,7 @@ class Ultra_Tracking
 
  void DistCB(const std_msgs::Float32& msg){
   geometry_msgs::TwistPtr cmd(new geometry_msgs::Twist());
-  cmd->linear.x = (msg.data - 60)*0.05 ;
+  cmd->linear.x = (msg.data - 60)*0.005 ;
   cmd->angular.z = 0;
   cmd_pub_.publish(cmd);
 
