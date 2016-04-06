@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(mybot_followme)
-
+SET(CMAKE_BUILD_TYPE "Debug") 
+SET(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g -ggdb")
+SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall")
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -162,6 +164,8 @@ target_link_libraries(xtion_pro_followme ${catkin_LIBRARIES} ${OpenCV_LIBS} ${PC
 add_executable(ultra_tracking src/ultra_tracking.cpp)
 target_link_libraries(ultra_tracking ${catkin_LIBRARIES})
 
+add_executable(lidar_followme src/lidar_followme.cpp)
+target_link_libraries(lidar_followme ${catkin_LIBRARIES})
 
 #############
 ## Install ##
