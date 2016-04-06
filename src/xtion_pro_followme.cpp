@@ -5,6 +5,7 @@
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
 #include "std_msgs/Float32MultiArray.h"
+#include <std_msgs/UInt8.h>
 #include <geometry_msgs/Twist.h>
 #include <sensor_msgs/image_encodings.h>
 #include "opencv2/objdetect/objdetect.hpp"
@@ -15,6 +16,8 @@
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
+#include <unistd.h>
 
 using namespace std;
 using namespace cv;
@@ -30,11 +33,13 @@ class Target_XYZ
   image_transport::Publisher image_pub_;
 
   ros::Subscriber cloud_sub_;
+  ros::Subscriber followMeCmd_sub_;
   ros::Publisher target_xyz_pub_;
   ros::Publisher cmd_pub_;
 
   std_msgs::Float32MultiArray brray;
 
+  unsigned int action_state=0;
 
   unsigned long  start_time, now;
 
@@ -83,6 +88,7 @@ public:
 
 
     cloud_sub_= nh_.subscribe<PointCloud>("/camera/depth/points", 1, &Target_XYZ::cloudCb, this);
+    followMeCmd_sub_= nh_.subscribe("/andbot/followMe/cmd", 1, &Target_XYZ::followMeCmdCb, this);
 
     cmd_pub_ = nh_.advertise<geometry_msgs::Twist>("/andbot/cmd_vel", 1);
 
@@ -103,8 +109,36 @@ public:
 //    cv::destroyWindow(OPENCV_WINDOW);
   }
 
+  void followMeCmdCb(const std_msgs::UInt8& msg)
+  {
+    // action_state: 0 (stop follow me)
+    // action_state: 1 (start follow me)
+    action_state=msg.data;
+    ROS_INFO("followMeCmdCb(0:stop  1:start): I got %d ", action_state);
+
+    if (action_state == 0) {
+      usleep(500000);
+      cmd_pub_.publish(geometry_msgs::TwistPtr(new geometry_msgs::Twist()));
+      usleep(500000);
+      cmd_pub_.publish(geometry_msgs::TwistPtr(new geometry_msgs::Twist()));
+      usleep(500000);
+      cmd_pub_.publish(geometry_msgs::TwistPtr(new geometry_msgs::Twist()));
+      usleep(500000);
+      cmd_pub_.publish(geometry_msgs::TwistPtr(new geometry_msgs::Twist()));
+      usleep(500000);
+      cmd_pub_.publish(geometry_msgs::TwistPtr(new geometry_msgs::Twist()));
+      usleep(500000);
+      cmd_pub_.publish(geometry_msgs::TwistPtr(new geometry_msgs::Twist()));
+
+    }
+
+
+  }
+
   void cloudCb(const PointCloud::ConstPtr&  cloud)
   {
+    if (action_state == 0)  return;
+
     //X,Y,Z of the centroid
     float x = 0.0;
     float y = 0.0;
@@ -242,7 +276,7 @@ public:
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "target_xywh");
+  ros::init(argc, argv, "mybot_followme");
   Target_XYZ ic;
   ros::spin();
   return 0;

@@ -162,6 +162,9 @@ target_link_libraries(xtion_pro_followme ${catkin_LIBRARIES} ${OpenCV_LIBS} ${PC
 add_executable(ultra_tracking src/ultra_tracking.cpp)
 target_link_libraries(ultra_tracking ${catkin_LIBRARIES})
 
+add_executable(ir_tracking src/ir_tracking.cpp)
+target_link_libraries(ir_tracking ${catkin_LIBRARIES})
+
 
 #############
 ## Install ##
