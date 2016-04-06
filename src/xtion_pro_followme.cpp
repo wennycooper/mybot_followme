@@ -116,7 +116,6 @@ public:
     action_state=msg.data;
     ROS_INFO("followMeCmdCb(0:stop  1:start): I got %d ", action_state);
 
-<<<<<<< HEAD
     if (action_state == 0) {
       usleep(500000);
       cmd_pub_.publish(geometry_msgs::TwistPtr(new geometry_msgs::Twist()));
@@ -134,8 +133,6 @@ public:
     }
 
 
-=======
->>>>>>> b49ac3216dda818cff20adfb8ed5eff923e18d12
   }
 
   void cloudCb(const PointCloud::ConstPtr&  cloud)
