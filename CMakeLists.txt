@@ -168,6 +168,9 @@ add_executable(lidar_followme src/lidar_followme.cpp)
 target_link_libraries(lidar_followme ${catkin_LIBRARIES})
 add_executable(ir_tracking src/ir_tracking.cpp)
 target_link_libraries(ir_tracking ${catkin_LIBRARIES})
+add_executable(camera_tracking_with_ir src/camera_tracking_with_ir.cpp)
+target_link_libraries(camera_tracking_with_ir ${catkin_LIBRARIES})
+
 
 
 #############

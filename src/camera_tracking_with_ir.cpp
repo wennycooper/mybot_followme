@@ -42,9 +42,9 @@ class Target_XYWH
   //int firstBodyFound = 0;
 
   CascadeClassifier face_cascade;
-//  String face_cascade_name = "/home/odroid/catkin_ws/src/mybot_followme/res/haarcascades/haarcascade_frontalface_default.xml";
+  String face_cascade_name = "/home/odroid/catkin_ws/src/mybot_followme/res/haarcascades/haarcascade_frontalface_default.xml";
 
-  String face_cascade_name = "/home/odroid/catkin_ws/src/mybot_followme/res/haarcascades/haarcascade_mcs_upperbody.xml";
+//  String face_cascade_name = "/home/odroid/catkin_ws/src/mybot_followme/res/haarcascades/haarcascade_upperbody.xml";
 
   // my simple filter
   void myFilter(double x, double y)
@@ -192,7 +192,7 @@ public:
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "target_xywh");
+  ros::init(argc, argv, "camera_tracking_with_ir");
   Target_XYWH ic;
   ros::spin();
   return 0;
